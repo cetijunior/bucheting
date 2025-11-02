@@ -5,57 +5,86 @@ import { useAccounts } from "../queries/useAccounts";
 import { useTransactions } from "../queries/useTransactions";
 import Button from "../components/ui/Button";
 import TransactionModal from "../components/transactions/TransactionModal";
-import { DollarSign, Plus, ChevronRight, Loader2 } from "lucide-react"; // Added Lucide icons
+import { DollarSign, Plus, ChevronRight, Loader2 } from "lucide-react";
 import { Link } from "react-router-dom";
+
+// Define a type for your account option data to resolve 'any' issues
+type AccountOption = {
+	id: string;
+	name: string;
+};
+
+// Define a type for your transaction data to resolve 'any' issues
+// This is a minimal definition based on usage
+type Transaction = {
+	id: string;
+	date: string;
+	payee: string | null;
+	amount: number;
+	category: string;
+	currency: string | null;
+	account_id: string;
+	category_id: string | null;
+	note: string | null;
+};
 
 export default function Dashboard() {
 	const today = new Date();
 	const ym = today.toISOString().slice(0, 7);
 
-	// Assuming hooks return { data: [], isFetching: boolean } structure
-	const { list: accounts, isFetching: accountsLoading } = useAccounts();
-	const {
-		list: txns,
-		create,
-		update,
-		remove,
-		isFetching: txnsLoading,
-	} = useTransactions({ month: ym });
+	// --- Data Fetching ---
+
+	// FIX 1 & 2: Correctly destructure to get the full query result objects
+	const { list: accountsQuery } = useAccounts();
+	const { list: txnsQuery, create, update } = useTransactions({ month: ym });
+
+	// Extract data and loading status from the inner query results
+	const accountsData: any[] | undefined = accountsQuery.data; // Using 'any[]' since the exact object structure is inferred from the original query type, or you can use a more specific type if defined elsewhere.
+	const accountsLoading = accountsQuery.isFetching;
+
+	const txnsData: any[] | undefined = txnsQuery.data;
+	const txnsLoading = txnsQuery.isFetching;
+
+	// --- State ---
 
 	const [open, setOpen] = useState(false);
-	const [editing, setEditing] = useState<any | null>(null);
+	// Note: The editing state should match the Transaction type for safety
+	const [editing, setEditing] = useState<Transaction | null>(null);
 
 	// --- Data Pre-processing ---
 
-	const accountsData = accounts.data || [];
-	const txnsData = txns.data || [];
+	// FIX 3: Safely use the fetched data, defaulting to an empty array
+	// This resolves the 'accounts' and 'txns' possibly 'undefined' errors
+	const safeAccounts = accountsData || [];
+	const safeTxns = txnsData || [];
 
-	// Account options for the modal
+	// Account options for the modal (Now correctly typed)
 	const accountOptions = useMemo(
-		() => accountsData.map((a: any) => ({ id: a.id, name: a.name })),
-		[accountsData]
+		() =>
+			safeAccounts.map((a: any): AccountOption => ({ id: a.id, name: a.name })),
+		[safeAccounts]
 	);
 
 	// Stats Calculation
 	const { netWorth, monthIncome, monthSpend } = useMemo(() => {
 		// Net worth
-		const netWorthVal = accountsData.reduce(
+		const netWorthVal = safeAccounts.reduce(
 			(s: number, a: any) => s + Number(a.current_balance || 0),
 			0
 		);
 
 		// Monthly income/spend
-		const inc = txnsData
+		const inc = safeTxns
 			.filter((x: any) => Number(x.amount) > 0)
 			.reduce((s: number, x: any) => s + Number(x.amount), 0);
 
 		// Use Math.abs for spend to ensure a positive value for display
-		const exp = txnsData
+		const exp = safeTxns
 			.filter((x: any) => Number(x.amount) < 0)
 			.reduce((s: number, x: any) => s + Math.abs(Number(x.amount)), 0);
 
 		return { netWorth: netWorthVal, monthIncome: inc, monthSpend: exp };
-	}, [accountsData, txnsData]);
+	}, [safeAccounts, safeTxns]);
 
 	// --- Handlers ---
 
@@ -70,7 +99,6 @@ export default function Dashboard() {
 
 	const handleAddTransactionClick = () => {
 		if (!accountOptions.length) {
-			// Use a more modern/integrated notification instead of 'alert'
 			console.error("Create an account first in Accounts.");
 			alert("Please create an account first in the Accounts section.");
 			return;
@@ -136,14 +164,14 @@ export default function Dashboard() {
 					</Button>
 				</div>
 
-				{accountsData.length === 0 ? (
+				{safeAccounts.length === 0 ? (
 					<div className="text-slate-400 py-4 text-center border-t border-slate-800">
 						No accounts found. Please create one to start tracking.
 					</div>
 				) : (
 					<div className="grid sm:grid-cols-2 gap-4">
-						{accountsData.map((a: any) => {
-							const recent = txnsData
+						{safeAccounts.map((a: any) => {
+							const recent = safeTxns
 								.filter((t: any) => t.account_id === a.id)
 								.slice(0, 3);
 
@@ -224,7 +252,7 @@ export default function Dashboard() {
 													date: new Date().toISOString().slice(0, 10),
 													payee: "",
 													category_id: null,
-												});
+												} as any); // Use 'as any' as a temporary bridge for partial data
 												setOpen(true);
 											}}
 											className="w-full justify-center text-blue-400 hover:bg-slate-700/70"
@@ -254,7 +282,7 @@ export default function Dashboard() {
 				</div>
 
 				<ul className="text-sm divide-y divide-slate-800">
-					{txnsData.slice(0, 5).map((t: any) => {
+					{safeTxns.slice(0, 5).map((t: any) => {
 						const isNeg = Number(t.amount) < 0;
 						const accountName =
 							accountOptions.find((opt) => opt.id === t.account_id)?.name ||
@@ -287,7 +315,7 @@ export default function Dashboard() {
 							</li>
 						);
 					})}
-					{!txnsData.length && (
+					{!safeTxns.length && (
 						<li className="py-4 text-slate-400 text-center">
 							No transactions recorded this month.
 						</li>

@@ -1,13 +1,13 @@
-import { useState, type JSX } from "react";
+import { type JSX } from "react";
 import { Outlet, useLocation, Link } from "react-router-dom";
 import {
 	Home,
 	List,
 	Wallet,
 	Settings as Cog,
-	Menu,
-	X,
-	LogOut,
+	// Menu,
+	// X,
+	// LogOut,
 } from "lucide-react";
 
 // --- 1. Top Bar Component Logic (Optimized) ---
@@ -51,8 +51,8 @@ const NavLink = ({
 };
 
 function AppTopBar() {
-	const [isMenuOpen, setIsMenuOpen] = useState(false);
-	const isAuthenticated = true; // Placeholder
+	// const [isMenuOpen, setIsMenuOpen] = useState(false);
+	// const isAuthenticated = true; // Placeholder
 
 	// We can simplify the mobile menu since the bottom bar handles primary navigation.
 	// Let's keep the menu button only for a "More/Sign Out" action, or simplify the whole TopBar for mobile.
@@ -64,7 +64,7 @@ function AppTopBar() {
 			{/* Desktop and Mobile Container */}
 			<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
 				{/* Logo/Branding */}
-				<div className="flex-shrink-0">
+				<div className="shrink-0">
 					<Logo />
 				</div>
 

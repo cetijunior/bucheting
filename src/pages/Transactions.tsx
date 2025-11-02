@@ -171,7 +171,7 @@ export default function Transactions() {
 				)}
 
 				{/* Desktop/Tablet Table View (Visible on sm screens and up) */}
-				{transactions?.length > 0 && (
+				{transactions && transactions?.length > 0 && (
 					<table className="w-full text-sm hidden sm:table">
 						<thead className="text-slate-400 bg-slate-900/80 sticky top-0">
 							<tr className="border-b border-slate-700">
@@ -236,7 +236,7 @@ export default function Transactions() {
 				)}
 
 				{/* Mobile List View (Visible on screens smaller than sm) */}
-				{transactions?.length > 0 && (
+				{transactions && transactions?.length > 0 && (
 					<ul className="divide-y divide-slate-800 sm:hidden p-4 space-y-3">
 						{transactions.map((t: any) => {
 							const accName =
