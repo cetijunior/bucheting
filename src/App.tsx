@@ -4,7 +4,8 @@ import Dashboard from "./pages/Dashboard";
 import Transactions from "./pages/Transactions";
 import Accounts from "./pages/Accounts";
 import Settings from "./pages/Settings";
-import Shell from "./components/Shell";
+// import Shell from "./components/Shell";
+import Navbar from "./components/Navbar.tsx";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthProvider, useAuth } from "./providers/AuthProvider;.tsx";
 import type { JSX } from "react";
@@ -28,7 +29,7 @@ export default function App() {
 						path="/"
 						element={
 							<PrivateRoute>
-								<Shell />
+								<Navbar />
 							</PrivateRoute>
 						}
 					>
