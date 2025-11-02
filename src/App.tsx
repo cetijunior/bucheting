@@ -1,35 +1,45 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { Routes, Route, Navigate } from "react-router-dom";
+import Login from "./pages/Login";
+import Dashboard from "./pages/Dashboard";
+import Transactions from "./pages/Transactions";
+import Accounts from "./pages/Accounts";
+import Settings from "./pages/Settings";
+import Shell from "./components/Shell";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { AuthProvider, useAuth } from "./providers/AuthProvider;.tsx";
+import type { JSX } from "react";
 
-function App() {
-  const [count, setCount] = useState(0)
+const qc = new QueryClient();
 
-  return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+function PrivateRoute({ children }: { children: JSX.Element }) {
+	const { sessionChecked, user } = useAuth();
+	if (!sessionChecked) return null; // could render a splash here
+	if (!user) return <Navigate to="/login" replace />;
+	return children;
 }
 
-export default App
+export default function App() {
+	return (
+		<QueryClientProvider client={qc}>
+			<AuthProvider>
+				<Routes>
+					<Route path="/login" element={<Login />} />
+					<Route
+						path="/"
+						element={
+							<PrivateRoute>
+								<Shell />
+							</PrivateRoute>
+						}
+					>
+						<Route index element={<Dashboard />} />
+						<Route path="transactions" element={<Transactions />} />
+						<Route path="accounts" element={<Accounts />} />
+						<Route path="settings" element={<Settings />} />
+					</Route>
+					<Route path="*" element={<Navigate to="/" replace />} />
+				</Routes>
+			</AuthProvider>
+		</QueryClientProvider>
+	);
+}
