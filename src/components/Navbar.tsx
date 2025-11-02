@@ -1,52 +1,63 @@
 import { useState, type JSX } from "react";
 import { Outlet, useLocation, Link } from "react-router-dom";
-import { Home, List, Wallet, Settings as Cog, Menu, X } from "lucide-react"; // Added Menu and X icons
+import {
+	Home,
+	List,
+	Wallet,
+	Settings as Cog,
+	Menu,
+	X,
+	LogOut,
+} from "lucide-react";
 
-// --- 1. Top Bar Component Logic (Integrated) ---
+// --- 1. Top Bar Component Logic (Optimized) ---
 
 // Placeholder components for a real application
 const Logo = () => (
-	<Link to="/" className="text-xl font-bold tracking-tight text-white">
+	<Link
+		to="/"
+		className="text-xl font-bold tracking-tight text-white hover:text-blue-400 transition-colors"
+	>
 		Bucheting
 	</Link>
 );
-const DesktopNavLink = ({
+
+// Navigation Link Component
+const NavLink = ({
 	to,
 	children,
 }: {
 	to: string;
 	children: React.ReactNode;
-}) => (
-	<Link
-		to={to}
-		className="text-sm font-medium text-slate-300 hover:text-white transition-colors duration-200"
-	>
-		{children}
-	</Link>
-);
-const MobileNavLink = ({
-	to,
-	children,
-	onClick,
-}: {
-	to: string;
-	children: React.ReactNode;
-	onClick: () => void;
-}) => (
-	<Link
-		to={to}
-		onClick={onClick}
-		className="block px-3 py-2 rounded-md text-base font-medium text-slate-300 hover:bg-gray-800 hover:text-white transition-colors"
-	>
-		{children}
-	</Link>
-);
+}) => {
+	const { pathname } = useLocation();
+	// Check for exact match for '/', or startsWith for others
+	const isActive = pathname === to || (to !== "/" && pathname.startsWith(to));
+
+	// Styling for active state
+	const activeClass = isActive
+		? "text-blue-400 border-b-2 border-blue-400"
+		: "text-slate-300 hover:text-white border-b-2 border-transparent hover:border-slate-500";
+
+	return (
+		<Link
+			to={to}
+			// Combine common styles with dynamic active/inactive styles
+			className={`text-sm font-medium transition-colors duration-200 h-full flex items-center ${activeClass}`}
+		>
+			{children}
+		</Link>
+	);
+};
 
 function AppTopBar() {
 	const [isMenuOpen, setIsMenuOpen] = useState(false);
+	const isAuthenticated = true; // Placeholder
 
-	// Placeholder for user state (replace with actual user context/state)
-	const isAuthenticated = true;
+	// We can simplify the mobile menu since the bottom bar handles primary navigation.
+	// Let's keep the menu button only for a "More/Sign Out" action, or simplify the whole TopBar for mobile.
+	// For this implementation, I will remove the redundant mobile menu and rely solely on the bottom bar for mobile nav.
+	// The hamburger button is no longer needed since its links are in the bottom bar.
 
 	return (
 		<header className="sticky top-0 z-50 bg-gray-900 border-b border-gray-700/80 backdrop-blur-sm shadow-lg">
@@ -58,74 +69,25 @@ function AppTopBar() {
 				</div>
 
 				{/* Desktop Navigation (Hidden on mobile) */}
-				<nav className="hidden lg:flex lg:space-x-8">
-					<DesktopNavLink to="/">Home</DesktopNavLink>
-					<DesktopNavLink to="/transactions">Transactions</DesktopNavLink>
-					<DesktopNavLink to="/accounts">Accounts</DesktopNavLink>
+				<nav className="hidden lg:flex lg:space-x-8 h-full">
+					<NavLink to="/">Home</NavLink>
+					<NavLink to="/transactions">Transactions</NavLink>
+					<NavLink to="/accounts">Accounts</NavLink>
+					<NavLink to="/settings">Settings</NavLink>
 				</nav>
 
-				{/* User Actions/CTA (Responsive) */}
-				<div className="flex items-center space-x-4">
-					<div className="hidden lg:block">
-						<DesktopNavLink to="/settings">Settings</DesktopNavLink>
-					</div>
-
-					{/* Mobile Menu Button (Hamburger) */}
-					<button
-						className="p-2 lg:hidden text-slate-300 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500 rounded-md"
-						onClick={() => setIsMenuOpen(!isMenuOpen)}
-						aria-expanded={isMenuOpen}
-						aria-controls="mobile-menu"
-					>
-						{isMenuOpen ? (
-							<X className="h-6 w-6" />
-						) : (
-							<Menu className="h-6 w-6" />
-						)}
-					</button>
+				{/* Placeholder for User Icon / CTA - Removed the Hamburger to avoid duplication with the bottom nav */}
+				<div className="flex items-center space-x-4 lg:hidden">
+					{/* Optionally, keep a simplified menu for actions like Sign Out, but removing it for clean mobile nav */}
 				</div>
 			</div>
 
-			{/* Mobile Menu Panel (Hidden on desktop) */}
-			{isMenuOpen && (
-				<div
-					className="lg:hidden bg-gray-900 border-t border-gray-800"
-					id="mobile-menu"
-				>
-					<div className="px-2 pt-2 pb-3 space-y-1">
-						<MobileNavLink to="/" onClick={() => setIsMenuOpen(false)}>
-							Home
-						</MobileNavLink>
-						<MobileNavLink
-							to="/transactions"
-							onClick={() => setIsMenuOpen(false)}
-						>
-							Transactions
-						</MobileNavLink>
-						<MobileNavLink to="/accounts" onClick={() => setIsMenuOpen(false)}>
-							Accounts
-						</MobileNavLink>
-						<MobileNavLink to="/settings" onClick={() => setIsMenuOpen(false)}>
-							Settings
-						</MobileNavLink>
-						{isAuthenticated && (
-							<button className="w-full text-left block px-3 py-2 rounded-md text-base font-medium text-red-400 hover:bg-gray-800 transition-colors">
-								Sign Out
-							</button>
-						)}
-						{!isAuthenticated && (
-							<MobileNavLink to="/login" onClick={() => setIsMenuOpen(false)}>
-								Sign In
-							</MobileNavLink>
-						)}
-					</div>
-				</div>
-			)}
+			{/* Note: The full Mobile Menu Panel is removed here since the bottom nav bar provides the main links. */}
 		</header>
 	);
 }
 
-// --- 2. Mobile Tab Component Logic (Original) ---
+// --- 2. Mobile Tab Component Logic (Unchanged, but now necessary padding is added) ---
 
 function Tab({
 	to,
@@ -154,20 +116,21 @@ function Tab({
 	);
 }
 
-// --- 3. Shell Component (Combined) ---
+// --- 3. Shell Component (Combined and Fixed) ---
 
 export default function Navbar() {
 	const { pathname } = useLocation();
 
 	return (
 		// The main grid layout
-		<div className="min-h-dvh grid grid-rows-[auto_1fr_auto]">
+		<div className="min-h-dvh grid grid-rows-[auto_1fr]">
+			{/* Changed from [auto_1fr_auto] to [auto_1fr] as the bottom nav is fixed/outside the flow */}
+
 			{/* Top Bar (Visible on all screen sizes, handles desktop nav) */}
 			<AppTopBar />
 
-			{/* Main Content Area */}
-			{/* On desktop, the container-px centers the content */}
-			<main className="container-px py-4 lg:py-6">
+			{/* 🍎 Main Content Area - KEY FIX IS THE pb-14 and lg:pb-6 (resets padding for desktop) */}
+			<main className="container-px py-4 pb-20 lg:py-6 lg:pb-6">
 				<Outlet />
 			</main>
 

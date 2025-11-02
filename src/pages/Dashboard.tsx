@@ -97,7 +97,7 @@ export default function Dashboard() {
 	return (
 		<div className="space-y-6 max-w-3xl mx-auto">
 			{/* 1. Statistics Cards */}
-			<section className="flex flex-row items-center justify-center md:grid md:grid-cols-2 gap-4">
+			<section className="items-center justify-center grid grid-cols-2 md:grid-cols-3 gap-4">
 				<StatCard
 					title="Net Worth"
 					// Dynamic color based on value
